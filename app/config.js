@@ -56,6 +56,6 @@ db.knex.schema.hasTable('users').then(function(exists) {
       console.log('Created Table', table);
     });
   }
-}) // users collections and model in app folder interacts with this.
+}); // users collections and model in app folder interacts with this.
 
 module.exports = db;
