@@ -143,7 +143,7 @@ function(req, res) {
             req.session.user = username;
             res.redirect('/');
           });
-        })
+        });
       }
     }
   );
