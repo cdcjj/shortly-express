@@ -8,6 +8,7 @@ var knex = require('knex')({
 });
 var db = require('bookshelf')(knex);
 
+// list of URLs table: id, baseUrl, code, title, num Visits, timestamp
 db.knex.schema.hasTable('urls').then(function(exists) {
   if (!exists) {
     db.knex.schema.createTable('urls', function (link) {
@@ -24,6 +25,7 @@ db.knex.schema.hasTable('urls').then(function(exists) {
   }
 });
 
+// keeps track of numofClicks: id, linkId--> foreign key for URLS, timestamp
 db.knex.schema.hasTable('clicks').then(function(exists) {
   if (!exists) {
     db.knex.schema.createTable('clicks', function (click) {
@@ -40,5 +42,20 @@ db.knex.schema.hasTable('clicks').then(function(exists) {
 // Add additional schema definitions below
 /************************************************************/
 
+// table of users: username, password, user_id, url table: add user_id reference
+// to show which user has shortened it? may run into problem if more than one user
+// shortens same url. hold of on urser_id in 'urls' table
+db.knex.schema.hasTable('users').then(function(exists) {
+  if (!exists) {
+    db.knex.schema.createTable('users', function (user) {
+      user.increments('id').primary();
+      user.string('username', 100);
+      user.string('password', 100);
+      user.timestamps();
+    }).then(function (table) {
+      console.log('Created Table', table);
+    });
+  }
+}) // users collections and model in app folder interacts with this.
 
 module.exports = db;
