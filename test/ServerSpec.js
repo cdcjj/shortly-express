@@ -292,7 +292,6 @@ describe('', function() {
       };
 
       request(options, function(error, res, body) {
-        console.log(res.headers);
         expect(res.headers.location).to.equal('/');
         done();
       });

@@ -3,6 +3,7 @@ var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
 var session = require('express-session');
+var flash = require('req-flash');
 
 
 var db = require('./app/config');
@@ -23,6 +24,7 @@ app.use(session({
   cookie: {maxAge: 7.2e+6},
   cookieName: 'testing'
 }));
+app.use(flash());
 app.use(partials());
 // Parse JSON (uniform resource locators)
 app.use(bodyParser.json());
@@ -109,8 +111,8 @@ function(req, res) {
           res.redirect('/');
         });
       } else {
-        res.flash('error', 'Username and password are incorrect');
-        res.redirect('login');
+        req.flash('error', 'Username and password are incorrect');
+        res.redirect('/login');
       }
     }
   );
@@ -129,8 +131,8 @@ function(req, res) {
   new User({username: username}).fetch().then(
     function(found) {
       if (found) {
-        res.flash('error', 'username already exists');
-        res.redirect('signup');
+        req.flash('error', 'username already exists');
+        res.redirect('/signup');
       } else {
         Users.create({
           username: req.body.username,
@@ -141,8 +143,7 @@ function(req, res) {
             req.session.user = username;
             res.redirect('/');
           });
-          // res.status(200).send(newUser)
-        });
+        })
       }
     }
   );
@@ -154,7 +155,7 @@ app.get('/logout', function(req, res) {
     if (err) {
       throw err;
     } else {
-      res.redirect('login');
+      res.redirect('/login');
     }
   });
 });
