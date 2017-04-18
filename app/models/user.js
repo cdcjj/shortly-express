@@ -11,6 +11,14 @@ var User = db.Model.extend({
   initialize: function() {
     this.on('creating', this.hashPassword, this);
   },
+  comparePassword: function(attempt, callback) {
+    bcrypt.compare(attempt, this.get('password'), function(err, match) {
+      if (err) {
+        throw err;
+      }
+      callback(match);
+    });
+  },
 
   hashPassword: function(model, attrs, options) {
     return new Promise(function(resolve, reject) {

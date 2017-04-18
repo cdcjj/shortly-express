@@ -78,27 +78,19 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
-var checkUser = function(req, res, next) {
-  if (req.session.user) {
-    next();
-  } else {
-    req.session.error = 'Acess Denied';
-    res.redirect('login');
-  }
-};
 
-app.get('/', checkUser,
+app.get('/', util.checkUser,
 function(req, res) {
   res.render('index');
 });
 
-app.get('/create', checkUser,
+app.get('/create', util.checkUser,
 function(req, res) {
   console.log('shortlyjs /create');
   res.render('index');
 });
 
-app.get('/links', checkUser,
+app.get('/links', util.checkUser,
 function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.status(200).send(links.models);
@@ -153,21 +145,12 @@ function(req, res) {
   new User({username: username}).fetch()
     .then(function(found) {
       if (found === null) {
-        req.flash('error', 'Username incorrect');
         res.redirect('/login');
       } else if (found) {
-        bcrypt.compare(password, found.get('password'), function(err, match) {
-          if (err) {
-            throw err;
-          }
+        found.comparePassword(password, function(match) {
           if (match) {
-            req.session.regenerate(function(err) {
-              req.session.user = username;
-              req.flash('success', 'successful login');
-              res.redirect('/');
-            });
+            util.createSession(req, res, username);
           } else {
-            req.flash('error', 'Wrong Password');
             res.redirect('/login');
           }
         });
@@ -188,7 +171,6 @@ function(req, res) {
   new User({username: username}).fetch().then(
     function(found) {
       if (found) {
-        req.flash('error', 'username already exists');
         res.redirect('/signup');
       } else {
         Users.create({
@@ -196,10 +178,7 @@ function(req, res) {
           password: req.body.password
         })
         .then(function(newUser) {
-          req.session.regenerate(function(err) {
-            req.session.user = username;
-            res.redirect('/');
-          });
+          util.createSession(req, res, username);
         });
       }
     }
