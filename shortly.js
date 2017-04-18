@@ -5,6 +5,7 @@ var bodyParser = require('body-parser');
 var session = require('express-session');
 var flash = require('req-flash');
 var bcrypt = require('bcrypt-nodejs');
+var Promise = require('bluebird');
 
 
 var db = require('./app/config');
@@ -33,14 +34,14 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
-function checkUser(req, res, next) {
+var checkUser = function(req, res, next) {
   if (req.session.user) {
     next();
-  }else {
+  } else {
     req.session.error = 'Acess Denied';
     res.redirect('login');
   }
-}
+};
 
 app.get('/', checkUser,
 function(req, res) {
@@ -105,37 +106,29 @@ function(req, res) {
   var username = req.body.username;
   var password = req.body.password;
 
-  new User({username: username, password: password}).fetch().then(
-    function(found) {
-      if (found) {
-        req.session.regenerate(function(err) {
-          req.session.user = username;
-          req.flash('success', 'successful login');
-          res.redirect('/');
-        });
-        // fix hashing compare.
-        // bcrypt.compare(password, found.get('password'), function(err, res) {
-        //   if (err) {
-        //     // not valid bcrypt hash
-        //     console.log(err);
-        //   }
-          // if (res) {
-        //     req.session.regenerate(function(err) {
-        //       req.session.user = username;
-        //       req.flash('success', 'successful login');
-        //       res.redirect('/');
-        //     });
-        //   } else {
-        //     req.flash('error', 'Wrong Password');
-        //     res.redirect('/login');
-        //   }
-        // });
-      } else {
+  new User({username: username}).fetch()
+    .then(function(found) {
+      if (found === null) {
         req.flash('error', 'Username incorrect');
         res.redirect('/login');
+      } else if (found) {
+        bcrypt.compare(password, found.get('password'), function(err, match) {
+          if (err) {
+            throw err;
+          }
+          if (match) {
+            req.session.regenerate(function(err) {
+              req.session.user = username;
+              req.flash('success', 'successful login');
+              res.redirect('/');
+            });
+          } else {
+            req.flash('error', 'Wrong Password');
+            res.redirect('/login');
+          }
+        });
       }
-    }
-  );
+    });
 });
 
 app.get('/signup',
