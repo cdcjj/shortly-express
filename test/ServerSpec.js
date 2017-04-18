@@ -346,4 +346,58 @@ describe('', function() {
 
   }); // 'Account Login'
 
+  describe('Check Hashing of password to DB:', function() {
+    var requestWithSession = request.defaults({jar: true});
+
+    beforeEach(function(done) {
+      new User({
+        'username': 'Phillip',
+        'password': 'istired'
+      }).save().then(function() {
+        done();
+      });
+    });
+
+    it('Should not store passwords unhashed', function(done) {
+      var hashedPW;
+      new User({username: 'Phillip'}).fetch()
+        .then(function(found) {
+          return hashedPW = found.get('password');
+        })
+        .then(function(hashedPW) {
+          expect('istired').to.not.equal(hashedPW);
+          done();
+        });
+    });
+  });
+
+  describe('User Logout', function() {
+    var requestWithSession = request.defaults({jar: true});
+
+    beforeEach(function(done) {
+      new User({
+        'username': 'Phillip',
+        'password': 'istired'
+      }).save().then(function() {
+        done();
+      });
+    });
+
+    it('Should return to login page when user logs out', function(done) {
+      request('http://127.0.0.1:4568/logout', function(error, res, body) {
+        expect(res.req.path).to.equal('/login');
+        done();
+      });
+    });
+
+    it('Should destroy session after logout', function(done) {
+      request('http://127.0.0.1:4568/logout', function(error, res, body) {
+        expect(res.req.session).to.equal(undefined);
+        done();
+      });
+    });
+
+
+  });
+
 });
