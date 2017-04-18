@@ -1,4 +1,5 @@
 var express = require('express');
+var passport = require('passport');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
@@ -6,6 +7,7 @@ var session = require('express-session');
 var flash = require('req-flash');
 var bcrypt = require('bcrypt-nodejs');
 var Promise = require('bluebird');
+var GitHubStrategy = require('passport-github2').Strategy;
 
 
 var db = require('./app/config');
@@ -15,8 +17,45 @@ var Links = require('./app/collections/links');
 var Link = require('./app/models/link');
 var Click = require('./app/models/click');
 
-var app = express();
+// var GITHUB_CLIENT_ID = "--insert-github-client-id-here--";
+// var GITHUB_CLIENT_SECRET = "--insert-github-client-secret-here--";
 
+// Passport session setup.
+//   To support persistent login sessions, the complete GitHub profile is serialized
+//   and deserialized.
+// passport.serializeUser(function(user, done) {
+//   done(null, user);
+// });
+//
+// passport.deserializeUser(function(obj, done) {
+//   done(null, obj);
+// });
+
+
+// Use the GitHubStrategy within Passport.
+//   Strategies in Passport require a `verify` function, which accept
+//   credentials (in this case, an accessToken, refreshToken, and GitHub
+//   profile), and invoke a callback with a user object.
+// passport.use(new GitHubStrategy({
+//     clientID: GITHUB_CLIENT_ID,
+//     clientSecret: GITHUB_CLIENT_SECRET,
+//     callbackURL: "http://127.0.0.1:3000/auth/github/callback"
+//   },
+//   function(accessToken, refreshToken, profile, done) {
+//     // asynchronous verification, for effect...
+//     process.nextTick(function () {
+//
+//       // To keep the example simple, the user's GitHub profile is returned to
+//       // represent the logged-in user.  In a typical application, you would want
+//       // to associate the GitHub account with a user record in your database,
+//       // and return that user instead.
+//       return done(null, profile);
+//     });
+//   }
+// ));
+
+
+var app = express();
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 app.use(session({
@@ -26,6 +65,11 @@ app.use(session({
   cookie: {maxAge: 7.2e+6},
   cookieName: 'testing'
 }));
+// Initialize Passport!  Also use passport.session() middleware, to support
+// persistent login sessions (recommended).
+// app.use(passport.initialize());
+// app.use(passport.session());
+
 app.use(flash());
 app.use(partials());
 // Parse JSON (uniform resource locators)
