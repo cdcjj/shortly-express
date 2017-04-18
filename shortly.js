@@ -4,6 +4,7 @@ var partials = require('express-partials');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var flash = require('req-flash');
+var bcrypt = require('bcrypt-nodejs');
 
 
 var db = require('./app/config');
@@ -109,10 +110,28 @@ function(req, res) {
       if (found) {
         req.session.regenerate(function(err) {
           req.session.user = username;
+          req.flash('success', 'successful login');
           res.redirect('/');
         });
+        // fix hashing compare.
+        // bcrypt.compare(password, found.get('password'), function(err, res) {
+        //   if (err) {
+        //     // not valid bcrypt hash
+        //     console.log(err);
+        //   }
+          // if (res) {
+        //     req.session.regenerate(function(err) {
+        //       req.session.user = username;
+        //       req.flash('success', 'successful login');
+        //       res.redirect('/');
+        //     });
+        //   } else {
+        //     req.flash('error', 'Wrong Password');
+        //     res.redirect('/login');
+        //   }
+        // });
       } else {
-        req.flash('error', 'Username and password are incorrect');
+        req.flash('error', 'Username incorrect');
         res.redirect('/login');
       }
     }
