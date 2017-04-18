@@ -32,7 +32,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
-function restrict(req, res, next) {
+function checkUser(req, res, next) {
   if (req.session.user) {
     next();
   }else {
@@ -41,17 +41,18 @@ function restrict(req, res, next) {
   }
 }
 
-app.get('/', restrict,
+app.get('/', checkUser,
 function(req, res) {
   res.render('index');
 });
 
-app.get('/create', restrict,
+app.get('/create', checkUser,
 function(req, res) {
+  console.log('shortlyjs /create');
   res.render('index');
 });
 
-app.get('/links', restrict,
+app.get('/links', checkUser,
 function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.status(200).send(links.models);
